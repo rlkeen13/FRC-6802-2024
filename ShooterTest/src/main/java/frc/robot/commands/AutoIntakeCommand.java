@@ -5,40 +5,48 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.MovementValues;
 import frc.robot.subsystems.ShooterSubsystem;
 
 public class AutoIntakeCommand extends Command {
-  ShooterSubsystem shooter;
   /** Creates a new AutoIntakeCommand. */
-  public AutoIntakeCommand(ShooterSubsystem shooter) {
+  ShooterSubsystem shooter;
+  boolean autoStop;
+  public AutoIntakeCommand(ShooterSubsystem shooter, boolean autoStop) {
     this.shooter = shooter;
+    this.autoStop = autoStop;
     // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(shooter);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    System.out.println("Auto Intake Init");
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    shooter.spinIntake(-.5);
+    shooter.spinIntake(MovementValues.intakeIn);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    System.out.println("Auto intake ended");
     shooter.spinIntake(0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(shooter.getIntakeSensor() > 3){
-      System.out.println("Finshed: ");
-      System.out.println(shooter.getIntakeSensor());
+    System.out.println(shooter.getIntakeSensor());
+    if(shooter.getIntakeSensor() > MovementValues.intakeSensorThreshold && autoStop){
       return true;
     }
-    return false;
+    else{
+      return false;
+    }
   }
 }

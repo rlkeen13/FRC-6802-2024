@@ -107,6 +107,10 @@ public class ShoulderSubsystem extends PIDSubsystem  {
     
   }
 
+public void shoulderTest(){
+  target = maxShoulderSpeed.getDouble(.6);
+}
+
 
 public Command spinShoulderCommand(double power) {
     // Inline construction of command goes here.
@@ -147,7 +151,7 @@ public Command spinShoulderCommand(double power) {
 
 
   @Override
-  protected double getMeasurement() {
+  public double getMeasurement() {
     // TODO Auto-generated method stub
     return shoulderEncoder.getAbsolutePosition();
   }

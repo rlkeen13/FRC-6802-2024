@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -38,12 +39,27 @@ public class ClimberSubsystem extends SubsystemBase {
     rightClimber.set(-1);
     leftClimber.set(-1);
   }
+  public StatusSignal<Boolean> getClimberReverseLimit(){
+    return rightClimber.getStickyFault_ReverseSoftLimit();
+  }
+
+  public StatusSignal<Boolean> getClimberForwardLimit(){
+    return rightClimber.getStickyFault_ForwardSoftLimit();
+  }
+
+  public void resetStickyFaults(){
+    rightClimber.clearStickyFault_ForwardSoftLimit();
+    rightClimber.clearStickyFault_ReverseSoftLimit();
+  }
 
   public void climbersMove(double speed){
     rightClimber.set(speed);
     leftClimber.set(speed);
   }
 
+  public double getSpeed(){
+   return Math.abs(rightClimber.getAcceleration().getValueAsDouble());
+  }
 
   @Override
   public void periodic() {

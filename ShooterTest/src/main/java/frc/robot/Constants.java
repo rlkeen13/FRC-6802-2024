@@ -26,4 +26,17 @@ public final class Constants {
     public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.7, 0, 0);
     public static final PIDConstants ANGLE_PID   = new PIDConstants(0.4, 0, 0.01);
   }
+
+  public static final class MovementValues{
+    public static final double intakeIn = -.5;
+    public static final double intakeOut = .5;
+    public static final double armUp = .9;
+    public static final double armDown = .6;
+    public static final double armStow = .8;
+    public static final double climberUp = .5;
+    public static final double climberDown = -.5;
+    public static final double intakeSensorThreshold = 1.5;
+    public static final double defaultScore = .7;
+    public static final double defaultVelocity = 3000;
+  }
 }

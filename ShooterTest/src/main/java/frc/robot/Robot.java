@@ -87,11 +87,23 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    m_robotContainer.getTestCommand().schedule();
   }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    /*
+     * Test command loop:
+     * 1. Spin Climber up and then spin climber down.
+     * 2. Intake spin.
+     * 3. Intake sensor check.
+     * 4. Arm Up check.
+     * 5. Shoot test.
+     * 6. Swerve module check.
+     * 7. IMU Test?
+     */
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override

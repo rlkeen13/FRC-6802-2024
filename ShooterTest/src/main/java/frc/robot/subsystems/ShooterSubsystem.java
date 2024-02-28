@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.MovementValues;
 
 public class ShooterSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
@@ -81,6 +82,7 @@ public class ShooterSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("Feed Forward", topPidController.getFF());
       SmartDashboard.putNumber("Max Output", kMaxOutput);
       SmartDashboard.putNumber("Min Output", kMinOutput);
+      SmartDashboard.putNumber("Target Speed", 3000);
 
     // set PID coefficients
     bottomPidController.setP(kP, 0);
@@ -128,11 +130,14 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void spinShooterVelocityCommand(double velocity, boolean instantScoring){
     
-      spinShooterVelocity(velocity);
+      spinShooterVelocity(3000);
       double error = velocity - Math.abs(topMotor.getEncoder().getVelocity());
       if(error < 100 || instantScoring){
-        spinIntake(-.5);
+        spinIntake(MovementValues.intakeIn);
       }
+
+    topPidController.setReference(velocity, ControlType.kVelocity);
+    bottomPidController.setReference(velocity, ControlType.kVelocity);
       System.out.println(error);
 }
 
@@ -143,8 +148,6 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void spinShooterVelocity(double velocity){
-    topPidController.setReference(velocity, ControlType.kVelocity);
-    bottomPidController.setReference(velocity, ControlType.kVelocity);
   }
 
   public void spinIntake(double power){
@@ -179,6 +182,7 @@ public class ShooterSubsystem extends SubsystemBase {
     if((ff != kFF)) { topPidController.setFF(ff); bottomPidController.setFF(ff);kFF = ff; }
 
   }
+  
 
   @Override
   public void simulationPeriodic() {

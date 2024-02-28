@@ -4,8 +4,10 @@
 
 package frc.robot;
 
+import frc.robot.Constants.MovementValues;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoIntakeCommand;
+import frc.robot.commands.PitTest;
 import frc.robot.subsystems.ClimberSubsystem;
 // import frc.robot.commands.Autos;
 // import frc.robot.commands.ExampleCommand;
@@ -39,6 +41,8 @@ public class RobotContainer {
   private final ShoulderSubsystem shoulder = new ShoulderSubsystem();
   private final ShooterSubsystem shooter = new ShooterSubsystem();
   private final ClimberSubsystem climber = new ClimberSubsystem();
+
+  private final PitTest pitTest = new PitTest(drivebase, climber, shooter, shoulder);
 
   private final int translationAxis = 1;
   private final int strafeAxis = 0;
@@ -105,16 +109,15 @@ public class RobotContainer {
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // Should be, lower arm and spin intake until cancelled which then raises the arm to the stowed position
-    intakeButton.whileTrue(Commands.run(() -> shoulder.setTargetSetpoint(.6, false), shoulder).alongWith(shooter.spinIntakeCommand(-.5)).finallyDo(()->shoulder.setTargetSetpoint(.8, false)));
+    intakeButton.whileTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armDown, false), shoulder).alongWith(shooter.spinIntakeCommand(MovementValues.intakeIn)).finallyDo(()->shoulder.setTargetSetpoint(MovementValues.armStow, false)));
+    shooterButton.whileTrue(Commands.runEnd(()->shooter.spinShooterVelocityCommand(MovementValues.defaultVelocity, shoulder.instantScoringPosition), ()->{shoulder.setTargetSetpoint(MovementValues.armStow, false); shooter.spinShooterVelocityCommand(0.0, true); shooter.spinIntake(0);}, shoulder));
     
-    shooterButton.whileTrue(Commands.runEnd(()->shooter.spinShooterVelocityCommand(3000, shoulder.instantScoringPosition), ()->{shoulder.setTargetSetpoint(.8, false); shooter.spinShooterVelocityCommand(0.0, true); shooter.spinIntake(0);}, shoulder));
-    
-    shoulderLifButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(.9, true), shoulder));
-    shoulderLowerButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(.6, false), shoulder));
-    shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(.67, false), shoulder));
+    shoulderLifButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armUp, true), shoulder));
+    shoulderLowerButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armDown, false), shoulder));
+    shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.defaultScore, false), shoulder));
     //shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(.72, false), shoulder));
-    climberUp.whileTrue(Commands.run(() -> {climber.climbersMove(.5); shoulder.setTargetSetpoint(.9, false);}, climber));
-    climberDown.whileTrue(Commands.runEnd(() -> climber.climbersMove(-.5), () -> climber.climbersMove(0), climber));
+    climberUp.whileTrue(Commands.run(() -> {climber.climbersMove(MovementValues.climberUp); shoulder.setTargetSetpoint(MovementValues.armUp, false);}, climber));
+    climberDown.whileTrue(Commands.runEnd(() -> climber.climbersMove(MovementValues.climberDown), () -> climber.climbersMove(0), climber));
 
     shoulderQuasiForward.whileTrue(shoulder.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     shoulderQuasiBackward.whileTrue(shoulder.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
@@ -133,5 +136,9 @@ public class RobotContainer {
     // An example command will be run in autonomous
     //return Autos.exampleAuto(m_exampleSubsystem);
     return null;
+  }
+
+  public Command getTestCommand(){
+    return pitTest;
   }
 }
