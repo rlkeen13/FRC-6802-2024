@@ -36,7 +36,7 @@ public final class Constants {
     public static final double climberUp = .5;
     public static final double climberDown = -.5;
     public static final double intakeSensorThreshold = 1.5;
-    public static final double defaultScore = .7;
+    public static final double defaultScore = .65;
     public static final double defaultVelocity = 3000;
   }
 }

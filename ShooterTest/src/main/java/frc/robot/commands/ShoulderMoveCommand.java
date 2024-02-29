@@ -36,7 +36,9 @@ public class ShoulderMoveCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(Math.abs(shoulder.getMeasurement() - position) < .1 )
+    System.out.println("Arm Error: ");
+    System.out.println(Math.abs(shoulder.getMeasurement() - position));
+    if(Math.abs(shoulder.getMeasurement() - position) < .05 )
       return true;
     else
       return false;

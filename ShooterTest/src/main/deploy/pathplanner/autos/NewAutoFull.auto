@@ -30,9 +30,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "autoCollect"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "MiddleMiddle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "autoCollect"
+                }
+              }
+            ]
           }
         },
         {
@@ -50,13 +63,26 @@
         {
           "type": "named",
           "data": {
-            "name": "autoArmCollect"
+            "name": "autoArmDown"
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "autoCollect"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "MiddleLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "autoCollect"
+                }
+              }
+            ]
           }
         },
         {

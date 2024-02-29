@@ -6,8 +6,11 @@ package frc.robot;
 
 import frc.robot.Constants.MovementValues;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AutoCollectionCommand;
 import frc.robot.commands.AutoIntakeCommand;
+import frc.robot.commands.AutoScore;
 import frc.robot.commands.PitTest;
+import frc.robot.commands.ShoulderMoveCommand;
 import frc.robot.subsystems.ClimberSubsystem;
 // import frc.robot.commands.Autos;
 // import frc.robot.commands.ExampleCommand;
@@ -16,6 +19,8 @@ import frc.robot.subsystems.ShoulderSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import java.io.File;
+
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
@@ -69,6 +74,12 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    NamedCommands.registerCommand("autoShoot", new AutoScore(shooter, shoulder, MovementValues.defaultVelocity));
+    NamedCommands.registerCommand("autoCollect", new AutoCollectionCommand(shooter, shoulder));
+    NamedCommands.registerCommand("autoArmDefault", new ShoulderMoveCommand(shoulder, MovementValues.defaultScore, false));
+    NamedCommands.registerCommand("autoArmAway", new ShoulderMoveCommand(shoulder, .7, false));
+    NamedCommands.registerCommand("autoArmStraightAway", new ShoulderMoveCommand(shoulder, .68, false));
+    NamedCommands.registerCommand("autoArmCollect", new ShoulderMoveCommand(shoulder, MovementValues.armDown, false));
     // Configure the trigger bindings
 
     // SmartDashboard.putNumber("Shooter", 0);
@@ -134,8 +145,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    //return Autos.exampleAuto(m_exampleSubsystem);
-    return null;
+    return drivebase.getAutonomousCommand("");
+
   }
 
   public Command getTestCommand(){

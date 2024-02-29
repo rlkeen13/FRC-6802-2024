@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.MovementValues;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ShoulderSubsystem;
@@ -12,7 +13,7 @@ import frc.robot.subsystems.ShoulderSubsystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class AutoCollectionCommand extends ParallelCommandGroup {
+public class AutoCollectionCommand extends SequentialCommandGroup {
   /** Creates a new AutoCollectionCommand. */
   public AutoCollectionCommand(ShooterSubsystem shooter, ShoulderSubsystem shoulder) {
     // Add your commands in the addCommands() call, e.g.
