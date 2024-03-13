@@ -19,12 +19,15 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.AutonConstants;
 
 import java.io.File;
+import java.sql.Driver;
 import java.util.function.DoubleSupplier;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
@@ -71,7 +74,7 @@ public class SwerveSubsystem extends SubsystemBase
     
 
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
-    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.NONE;
     try
     {
       swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed);
@@ -120,6 +123,7 @@ public class SwerveSubsystem extends SubsystemBase
                                          // Default path replanning config. See the API for the options here
         ),
         () -> {
+          
           // Boolean supplier that controls when the path will be mirrored for the red alliance
           // This will flip the path being followed to the red side of the field.
           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
@@ -159,7 +163,7 @@ public class SwerveSubsystem extends SubsystemBase
   public Command getAutonomousCommand(String pathName)
   {
     // Create a path following command using AutoBuilder. This will also trigger event markers.
-    return new PathPlannerAuto("NewAutoFull");
+    return new PathPlannerAuto(pathName);
   }
 
   /**
@@ -294,6 +298,7 @@ public class SwerveSubsystem extends SubsystemBase
    */
   public void drive(Translation2d translation, double rotation, boolean fieldRelative)
   {
+    SmartDashboard.putNumber("Rotation", rotation);
     swerveDrive.drive(translation,
                       rotation,
                       fieldRelative,

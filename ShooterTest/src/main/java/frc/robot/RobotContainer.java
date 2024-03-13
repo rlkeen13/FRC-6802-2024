@@ -11,6 +11,7 @@ import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.PitTest;
 import frc.robot.commands.ShoulderMoveCommand;
+import frc.robot.commands.AbsoluteDriveAdv;
 import frc.robot.subsystems.ClimberSubsystem;
 // import frc.robot.commands.Autos;
 // import frc.robot.commands.ExampleCommand;
@@ -20,14 +21,20 @@ import frc.robot.subsystems.SwerveSubsystem;
 
 import java.io.File;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -53,6 +60,8 @@ public class RobotContainer {
   private final int strafeAxis = 0;
   private final int rotationAxis = 3;
 
+  private final SendableChooser<Command> autoChooser;
+
   // Replace with CommandPS4Controller or CommandJoystick if needed
   // private final Joystick m_driverController =
   //     new Joystick(OperatorConstants.kDriverControllerPort);
@@ -74,13 +83,31 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+     
+    CameraServer.startAutomaticCapture();
+    CameraServer.startAutomaticCapture();
     NamedCommands.registerCommand("autoShoot", new AutoScore(shooter, shoulder, MovementValues.defaultVelocity));
     NamedCommands.registerCommand("autoCollect", new AutoCollectionCommand(shooter, shoulder));
     NamedCommands.registerCommand("autoArmDefault", new ShoulderMoveCommand(shoulder, MovementValues.defaultScore, false));
-    NamedCommands.registerCommand("autoArmAway", new ShoulderMoveCommand(shoulder, .7, false));
-    NamedCommands.registerCommand("autoArmStraightAway", new ShoulderMoveCommand(shoulder, .68, false));
+    NamedCommands.registerCommand("autoArmAway", new ShoulderMoveCommand(shoulder, .71, false));
+    NamedCommands.registerCommand("autoArmStraightAway", new ShoulderMoveCommand(shoulder, MovementValues.armAway, false));
     NamedCommands.registerCommand("autoArmCollect", new ShoulderMoveCommand(shoulder, MovementValues.armDown, false));
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
     // Configure the trigger bindings
+
+    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
+                                                                   () -> MathUtil.applyDeadband(driverController.getRawAxis(translationAxis),
+                                                                                                OperatorConstants.LEFT_Y_DEADBAND),
+                                                                   () -> -MathUtil.applyDeadband(driverController.getRawAxis(strafeAxis),
+                                                                                                OperatorConstants.LEFT_X_DEADBAND),
+                                                                   () -> MathUtil.applyDeadband(driverController.getRawAxis(rotationAxis),
+                                                                                                OperatorConstants.RIGHT_X_DEADBAND),
+                                                                   () -> driverController.getRawButtonPressed(2),
+                                                                   () -> driverController.getRawButtonPressed(1),
+                                                                   () -> driverController.getRawButtonPressed(3),
+                                                                   () -> driverController.getRawButtonPressed(4));
+
 
     // SmartDashboard.putNumber("Shooter", 0);
     // SmartDashboard.putNumber("Intake", 0);
@@ -88,7 +115,7 @@ public class RobotContainer {
     // shooterButton = new JoystickButton(m_driverController, 2);
     configureBindings();
     Command closedFieldRel = drivebase.driveCommand(
-        () -> (Math.abs(driverController.getRawAxis(translationAxis)) > OperatorConstants.LEFT_Y_DEADBAND) ? driverController.getRawAxis(translationAxis) : 0,
+        () -> (Math.abs(driverController.getRawAxis(translationAxis)) > OperatorConstants.LEFT_Y_DEADBAND) ? -driverController.getRawAxis(translationAxis) : 0,
         () -> (Math.abs(driverController.getRawAxis(strafeAxis)) > OperatorConstants.LEFT_X_DEADBAND) ? -driverController.getRawAxis(strafeAxis) : 0,
         () -> (Math.abs(driverController.getRawAxis(rotationAxis)) > .12 ) ? -driverController.getRawAxis(rotationAxis) : 0);
 
@@ -97,13 +124,17 @@ public class RobotContainer {
         () -> (Math.abs(driverController.getRawAxis(strafeAxis)) > OperatorConstants.LEFT_X_DEADBAND) ? -driverController.getRawAxis(strafeAxis) : 0,
         () -> (Math.abs(driverController.getRawAxis(rotationAxis)) > .12 ) ? -driverController.getRawAxis(rotationAxis) : 0);
 
-    
+      // Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
+      //   () -> MathUtil.applyDeadband(driverController.getRawAxis(translationAxis), OperatorConstants.LEFT_Y_DEADBAND),
+      //   () -> MathUtil.applyDeadband(driverController.getRawAxis(strafeAxis), OperatorConstants.LEFT_X_DEADBAND),
+      //   () -> driverController2.getRawAxis(0),
+      //   () -> driverController2.getRawAxis(1));
         // Command closedFieldRel = drivebase.driveCommand(
     //     () -> 0,
     //     () -> 0,
     //     () -> 0);
 
-    drivebase.setDefaultCommand(!RobotBase.isSimulation() ? closedFieldRel : closedFieldRelSim);
+    drivebase.setDefaultCommand(!RobotBase.isSimulation() ? closedAbsoluteDriveAdv : closedFieldRelSim);
   }
 
   /**
@@ -116,6 +147,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+   // new JoystickButton(driverController, 3).onTrue((new InstantCommand(drivebase::zeroGyro)));
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
@@ -124,7 +156,7 @@ public class RobotContainer {
     shooterButton.whileTrue(Commands.runEnd(()->shooter.spinShooterVelocityCommand(MovementValues.defaultVelocity, shoulder.instantScoringPosition), ()->{shoulder.setTargetSetpoint(MovementValues.armStow, false); shooter.spinShooterVelocityCommand(0.0, true); shooter.spinIntake(0);}, shoulder));
     
     shoulderLifButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armUp, true), shoulder));
-    shoulderLowerButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armDown, false), shoulder));
+    shoulderLowerButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armAway, false), shoulder));
     shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.defaultScore, false), shoulder));
     //shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(.72, false), shoulder));
     climberUp.whileTrue(Commands.run(() -> {climber.climbersMove(MovementValues.climberUp); shoulder.setTargetSetpoint(MovementValues.armUp, false);}, climber));
@@ -145,7 +177,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("");
+    return autoChooser.getSelected();
 
   }
 

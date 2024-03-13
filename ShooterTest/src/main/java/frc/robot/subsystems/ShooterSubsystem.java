@@ -44,6 +44,7 @@ public class ShooterSubsystem extends SubsystemBase {
          .getEntry();
          
   public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+  public boolean hasSpun = false;
   public ShooterSubsystem() {
 
     topMotor = new CANSparkMax(61, MotorType.kBrushless);
@@ -129,10 +130,11 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void spinShooterVelocityCommand(double velocity, boolean instantScoring){
-    
-      spinShooterVelocity(3000);
+      //if(velocity != 0)
+        //velocity = maxSpeedShooter.getDouble(3000.0);
       double error = velocity - Math.abs(topMotor.getEncoder().getVelocity());
       if(error < 100 || instantScoring){
+        hasSpun = true;
         spinIntake(MovementValues.intakeIn);
       }
 

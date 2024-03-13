@@ -22,6 +22,9 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
@@ -34,12 +37,19 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.MovementValues;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.analysis.solvers.*;
+
+//import org.apache.commons.
 public class ShoulderSubsystem extends PIDSubsystem  {
    // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
  // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
@@ -53,6 +63,7 @@ public class ShoulderSubsystem extends PIDSubsystem  {
 
  public boolean instantScoringPosition = false;
  public double target = .85;
+ public double distanceFromLimelightToGoalInches;
 
   // Create a motion profile with the given maximum velocity and maximum
   // acceleration constraints for the next setpoint.
@@ -61,7 +72,18 @@ public class ShoulderSubsystem extends PIDSubsystem  {
   private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
   private TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
 
+  NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 
+  // how many degrees back is your limelight rotated from perfectly vertical?
+  double limelightMountAngleDegrees = 38.3; 
+
+  // distance from the center of the Limelight lens to the floor
+  double limelightLensHeightInches = 6; 
+
+  // distance from the target to the floor
+  double goalHeightInches = 80.5; 
+  double angleToGoalDegrees;
+  double angleToGoalRadians;
 
   
   ShuffleboardTab tab = Shuffleboard.getTab("Max Speed Shoulder");
@@ -94,14 +116,13 @@ public class ShoulderSubsystem extends PIDSubsystem  {
               this));
   public ShoulderSubsystem() {super(
         new PIDController(
-            1.23,
+            3.56,
             0,
             .0214));
     rightShoulder = new TalonFX(51);
     rightShoulder.setInverted(false);
     leftShoulder = new TalonFX(52);
     leftShoulder.setControl(new Follower(rightShoulder.getDeviceID(), true));
-
 
     this.enable();
     
@@ -149,10 +170,47 @@ public Command spinShoulderCommand(double power) {
     this.disable();
   }
 
+  public void experimentalArmSet(){
+    double dist_x_init = distanceFromLimelightToGoalInches;
+
+    // starting height of point from floor
+    double y_init = 16.25;
+    // r from r,theta of interest point
+    double r = 23.25;
+    // theta from r,theta of interest point
+    double theta_c = Math.atan(5.25/23.75);
+    // height to shoot ring at
+    double target_height = 81;
+    // initial guess if using something like Newton-Raphson
+    double init_guess = Math.toRadians(175);
+    // starting encoder rotations
+    double init_arm_rotations = 0.6;
+
+    var adjacent = distanceFromLimelightToGoalInches + 24;
+    var opposite = 80.5 - 12;
+
+    double suggestedAngle = Math.toDegrees(Math.tan(opposite/adjacent));
+    SmartDashboard.putNumber("Suggested Arm Angle", suggestedAngle);
+
+    double suggestedArmPosition = (61.0 - suggestedAngle)/365.0 + .6;
+
+    SmartDashboard.putNumber("Suggested Arm Value", suggestedArmPosition);
+
+    // the actual solving part
+    // UnivariateFunction height = theta_arm -> Math.tan(theta_arm - theta_c - Math.PI + Math.toRadians(15)) * (dist_x_init + r*Math.cos(theta_arm-theta_c)) + y_init + r*Math.sin(theta_arm-theta_c) - target_height;
+    // UnivariateSolver solver = new BrentSolver();
+    // double arm_angle = solver.solve(10, height, -Math.PI, Math.PI);
+
+    // convert to usable with encoders
+    // double arm_rotations = init_arm_rotations + (-Math.PI - arm_angle)/(2*Math.PI);
+    // SmartDashboard.putNumber("arm rotations", arm_rotations);
+  }
+
 
   @Override
   public double getMeasurement() {
     // TODO Auto-generated method stub
+    SmartDashboard.putNumber("arm angle", shoulderEncoder.getAbsolutePosition());
     return shoulderEncoder.getAbsolutePosition();
   }
 
@@ -182,8 +240,24 @@ public Command spinShoulderCommand(double power) {
   }
 
   @Override
-  public void periodic(){    
-    //target = maxShoulderSpeed.getDouble(.6);
+  public void periodic(){  
+    
+  
+  NetworkTableEntry ty = table.getEntry("ty");
+  double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+  
+    
+  angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+  angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+
+  //calculate distance
+  distanceFromLimelightToGoalInches = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+  SmartDashboard.putNumber("Distance to target", distanceFromLimelightToGoalInches);
+  experimentalArmSet();
+    if(target == MovementValues.armAway){
+      target = maxShoulderSpeed.getDouble(.6);
+    }  
+    //target 
     this.setSetpoint(target);
     super.periodic();
   }

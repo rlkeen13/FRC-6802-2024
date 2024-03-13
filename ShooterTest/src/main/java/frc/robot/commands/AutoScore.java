@@ -42,7 +42,8 @@ public class AutoScore extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(shooter.getIntakeSensor() < MovementValues.intakeSensorThreshold){
+    if(shooter.getIntakeSensor() < MovementValues.intakeSensorThreshold && shooter.hasSpun){
+      shooter.hasSpun = false;
       return true;
     }
     return false;
