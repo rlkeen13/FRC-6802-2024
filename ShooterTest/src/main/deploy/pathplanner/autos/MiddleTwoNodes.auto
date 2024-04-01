@@ -49,9 +49,15 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "CenterAmp"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "autoArmStraightAway"
+            "name": "autoArmDefault"
           }
         },
         {

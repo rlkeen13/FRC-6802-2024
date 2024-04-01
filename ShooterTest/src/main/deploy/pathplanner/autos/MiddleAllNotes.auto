@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7509152340242001,
-      "y": 4.408696224799858
+      "x": 1.3771774811958186,
+      "y": 5.518363150740554
     },
-    "rotation": 120.84845184760248
+    "rotation": 180.0
   },
   "command": {
     "type": "sequential",
@@ -24,15 +24,9 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 8.0
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "autoArmDown"
+            "name": "autoArmCollect"
           }
         },
         {
@@ -42,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StageSideNode"
+                  "pathName": "MiddleMiddle"
                 }
               },
               {
@@ -57,7 +51,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "StageSideNodeReturn"
+            "pathName": "CenterAmp"
           }
         },
         {
@@ -73,13 +67,19 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "autoArmCollect"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StageOutofWay"
+                  "pathName": "MidSubToAmp"
                 }
               },
               {
@@ -94,7 +94,50 @@
         {
           "type": "path",
           "data": {
-            "pathName": "StageOutOfWayReturn"
+            "pathName": "AmpToMidSub"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "autoArmDefault"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "autoShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "autoArmCollect"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "MidSubToStage"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "autoCollect"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "StageToMidSub"
           }
         },
         {

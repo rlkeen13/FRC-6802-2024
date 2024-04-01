@@ -124,7 +124,9 @@ public class ShoulderSubsystem extends PIDSubsystem  {
     leftShoulder = new TalonFX(52);
     leftShoulder.setControl(new Follower(rightShoulder.getDeviceID(), true));
 
-    this.enable();
+    this.enable();    
+  
+  table.getEntry("stream").setNumber(2);
     
   }
 
@@ -189,7 +191,7 @@ public Command spinShoulderCommand(double power) {
     var adjacent = distanceFromLimelightToGoalInches + 24;
     var opposite = 80.5 - 12;
 
-    double suggestedAngle = Math.toDegrees(Math.tan(opposite/adjacent));
+    double suggestedAngle = Math.toDegrees(Math.atan(opposite/adjacent));
     SmartDashboard.putNumber("Suggested Arm Angle", suggestedAngle);
 
     double suggestedArmPosition = (61.0 - suggestedAngle)/365.0 + .6;
@@ -254,10 +256,10 @@ public Command spinShoulderCommand(double power) {
   distanceFromLimelightToGoalInches = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
   SmartDashboard.putNumber("Distance to target", distanceFromLimelightToGoalInches);
   experimentalArmSet();
-    if(target == MovementValues.armAway){
+     if(target == MovementValues.armAway){
       target = maxShoulderSpeed.getDouble(.6);
     }  
-    //target 
+     
     this.setSetpoint(target);
     super.periodic();
   }

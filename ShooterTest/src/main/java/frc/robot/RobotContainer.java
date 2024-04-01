@@ -25,7 +25,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
@@ -35,6 +37,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -53,7 +56,6 @@ public class RobotContainer {
   private final ShoulderSubsystem shoulder = new ShoulderSubsystem();
   private final ShooterSubsystem shooter = new ShooterSubsystem();
   private final ClimberSubsystem climber = new ClimberSubsystem();
-
   private final PitTest pitTest = new PitTest(drivebase, climber, shooter, shoulder);
 
   private final int translationAxis = 1;
@@ -74,7 +76,7 @@ public class RobotContainer {
   private final JoystickButton shoulderScoreButton = new JoystickButton(operatorController, 7);
   private final JoystickButton intakeButton = new JoystickButton(operatorController, 6);
   private final JoystickButton shooterButton = new JoystickButton(operatorController, 13);
-  private final JoystickButton shoulderQuasiForward = new JoystickButton(operatorController, 4);
+  private final JoystickButton sourceScoring = new JoystickButton(operatorController, 4);
   private final JoystickButton shoulderQuasiBackward = new JoystickButton(operatorController, 17);
   private final JoystickButton shoulderStaticForward = new JoystickButton(operatorController, 12);
   private final JoystickButton shoulderStaticBackward = new JoystickButton(operatorController, 18);
@@ -84,8 +86,15 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
      
-    CameraServer.startAutomaticCapture();
-    CameraServer.startAutomaticCapture();
+    // UsbCamera camera = new UsbCamera("cam0", 0);
+    // camera.setFPS(30);
+    // camera.setResolution(320, 240);
+    
+    // CameraServer.startAutomaticCapture(camera);
+    // UsbCamera camera = CameraServer.startAutomaticCapture();
+    // camera.setResolution(360, 240);
+    //camera.setFPS(15);
+
     NamedCommands.registerCommand("autoShoot", new AutoScore(shooter, shoulder, MovementValues.defaultVelocity));
     NamedCommands.registerCommand("autoCollect", new AutoCollectionCommand(shooter, shoulder));
     NamedCommands.registerCommand("autoArmDefault", new ShoulderMoveCommand(shoulder, MovementValues.defaultScore, false));
@@ -103,10 +112,10 @@ public class RobotContainer {
                                                                                                 OperatorConstants.LEFT_X_DEADBAND),
                                                                    () -> MathUtil.applyDeadband(driverController.getRawAxis(rotationAxis),
                                                                                                 OperatorConstants.RIGHT_X_DEADBAND),
-                                                                   () -> driverController.getRawButtonPressed(2),
-                                                                   () -> driverController.getRawButtonPressed(1),
-                                                                   () -> driverController.getRawButtonPressed(3),
-                                                                   () -> driverController.getRawButtonPressed(4));
+                                                                   () -> operatorController.getRawButtonPressed(12),
+                                                                   () -> operatorController.getRawButtonPressed(15),
+                                                                   () -> operatorController.getRawButtonPressed(19),
+                                                                   () -> operatorController.getRawButtonPressed(17));
 
 
     // SmartDashboard.putNumber("Shooter", 0);
@@ -156,18 +165,18 @@ public class RobotContainer {
     shooterButton.whileTrue(Commands.runEnd(()->shooter.spinShooterVelocityCommand(MovementValues.defaultVelocity, shoulder.instantScoringPosition), ()->{shoulder.setTargetSetpoint(MovementValues.armStow, false); shooter.spinShooterVelocityCommand(0.0, true); shooter.spinIntake(0);}, shoulder));
     
     shoulderLifButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armUp, true), shoulder));
-    shoulderLowerButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.armAway, false), shoulder));
+    shoulderLowerButton.onTrue(new ShoulderMoveCommand(shoulder, MovementValues.armAway, false));
     shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(MovementValues.defaultScore, false), shoulder));
     //shoulderScoreButton.onTrue(Commands.run(() -> shoulder.setTargetSetpoint(.72, false), shoulder));
     climberUp.whileTrue(Commands.run(() -> {climber.climbersMove(MovementValues.climberUp); shoulder.setTargetSetpoint(MovementValues.armUp, false);}, climber));
     climberDown.whileTrue(Commands.runEnd(() -> climber.climbersMove(MovementValues.climberDown), () -> climber.climbersMove(0), climber));
 
-    shoulderQuasiForward.whileTrue(shoulder.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    shoulderQuasiBackward.whileTrue(shoulder.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    sourceScoring.whileTrue(Commands.run(() -> shoulder.setTargetSetpoint(.78, false), shoulder).alongWith(shooter.spinIntakeCommand(MovementValues.intakeIn)).finallyDo(()->shoulder.setTargetSetpoint(MovementValues.armStow, false)));
+    //shoulderQuasiBackward.whileTrue(shoulder.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
 
-    shoulderStaticForward.whileTrue(shoulder.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    //shoulderStaticForward.whileTrue(shoulder.sysIdDynamic(SysIdRoutine.Direction.kForward));
 
-    shoulderStaticBackward.whileTrue(shoulder.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    //shoulderStaticBackward.whileTrue(shoulder.sysIdDynamic(SysIdRoutine.Direction.kReverse));
   }
 
   /**

@@ -17,6 +17,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -46,6 +49,8 @@ public class SwerveSubsystem extends SubsystemBase
    * Swerve drive object.
    */
   private final SwerveDrive swerveDrive;
+
+  NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   /**
    * Maximum speed of the robot in meters per second, used to limit acceleration.
    */
@@ -139,20 +144,18 @@ public class SwerveSubsystem extends SubsystemBase
    *
    * @param camera {@link PhotonCamera} to communicate with.
    * @return A {@link Command} which will run the alignment.
-  //  */
-  // public Command aimAtTarget(PhotonCamera camera)
-  // {
-  //   return run(() -> {
-  //     PhotonPipelineResult result = camera.getLatestResult();
-  //     if (result.hasTargets())
-  //     {
-  //       drive(getTargetSpeeds(0,
-  //                             0,
-  //                             Rotation2d.fromDegrees(result.getBestTarget()
-  //                                                          .getYaw()))); // Not sure if this will work, more math may be required.
-  //     }
-  //   });
-  // }
+   * */
+  
+   public Command aimAtTarget()
+   {
+     return run(() -> {
+       NetworkTableEntry tx = table.getEntry("tx");
+         drive(getTargetSpeeds(0,
+                               0,
+                               Rotation2d.fromDegrees(tx.getDouble(0)))); // Not sure if this will work, more math may be required.
+       
+     });
+   }
 
   /**
    * Get the path follower with events.

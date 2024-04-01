@@ -55,27 +55,15 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "autoArmAway"
+            "pathName": "AmpSideSideReturn"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "autoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "autoArmDown"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "autoArmAway"
+            "name": "autoArmDefault"
           }
         },
         {

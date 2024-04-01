@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.Map;
+
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.CANSparkMax;
@@ -37,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
   AnalogInput intakeSensor = new AnalogInput(3);
   ShuffleboardTab tab = Shuffleboard.getTab("Max Speed Shooter");
   private GenericEntry maxSpeedShooter =
-      tab.add("Max Speed Shooter", 0).withWidget(BuiltInWidgets.kNumberSlider)
+      tab.add("Max Speed Shooter", 4000).withWidget(BuiltInWidgets.kNumberSlider).withProperties(Map.of("min", 1000, "max", 5000))
          .getEntry();
   private GenericEntry maxSpeedIntake =
       tab.add("Max Speed Intake", 0).withWidget(BuiltInWidgets.kNumberSlider)
@@ -130,12 +132,16 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void spinShooterVelocityCommand(double velocity, boolean instantScoring){
-      //if(velocity != 0)
-        //velocity = maxSpeedShooter.getDouble(3000.0);
-      double error = velocity - Math.abs(topMotor.getEncoder().getVelocity());
+      // if(velocity != 0)
+      //   velocity = maxSpeedShooter.getDouble(4000.0);
+      double actualVelo = topMotor.getEncoder().getVelocity();
+      double bottomVelo = bottomMotor.getEncoder().getVelocity();
+      SmartDashboard.putNumber("Top Wheels", actualVelo);
+      SmartDashboard.putNumber("Bottom Wheels", bottomVelo);
+      double error = velocity - Math.abs(actualVelo);
       if(error < 100 || instantScoring){
         hasSpun = true;
-        spinIntake(MovementValues.intakeIn);
+        spinIntake(MovementValues.intakeInShoot);
       }
 
     topPidController.setReference(velocity, ControlType.kVelocity);

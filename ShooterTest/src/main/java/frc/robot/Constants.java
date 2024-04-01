@@ -50,17 +50,18 @@ public final class Constants
   }
 
   public static final class MovementValues{
+    public static final double intakeInShoot = -1;
     public static final double intakeIn = -.5;
-    public static final double intakeOut = .5;
+    public static final double intakeOut = .8;
     public static final double armUp = .9;
-    public static final double armAway = .695;
+    public static final double armAway = .6995;
     public static final double armDown = .6;
     public static final double armStow = .8;
     public static final double climberUp = .5;
     public static final double climberDown = -.5;
     public static final double intakeSensorThreshold = 1.5;
-    public static final double defaultScore = .655;
-    public static final double defaultVelocity = 3000;
+    public static final double defaultScore = .65;
+    public static final double defaultVelocity = 3100;
   }
 }
 
